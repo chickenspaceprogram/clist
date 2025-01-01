@@ -5,27 +5,27 @@
 cmake_minimum_required(VERSION 3.15)
 
 set(LIST_HEADER_LIST
-    "${list_SOURCE_DIR}/include/list/list.h"
+    "${list_SOURCE_DIR}/include/clist/clist.h"
 )
 
-add_library(list
-    list.c
+add_library(clist
+    clist.c
     rand.c
     rand.h
     ${LIST_HEADER_LIST}
 )
 
-target_include_directories(list PUBLIC "${PROJECT_SOURCE_DIR}/include")
+target_include_directories(clist PUBLIC "${PROJECT_SOURCE_DIR}/include")
 
-add_executable(TEST-list
-    TEST-list.c
+add_executable(TEST-clist
+    TEST-clist.c
 )
 
-target_link_libraries(TEST-list list)
+target_link_libraries(TEST-clist clist)
 
 add_test(
-    NAME list
-    COMMAND $<TARGET_FILE:TEST-list>
+    NAME clist
+    COMMAND $<TARGET_FILE:TEST-clist>
 )
 
 source_group(

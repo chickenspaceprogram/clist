@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include "rand.h"
-#include <list/list.h>
+#include <clist/clist.h>
 
 typedef struct pointer_arr {
     size_t current_index;

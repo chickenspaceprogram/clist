@@ -3,7 +3,7 @@
 //  file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #include <assert.h>
-#include <list/list.h>
+#include <clist/clist.h>
 #include <stdio.h>
 
 void test_push_get(void) {

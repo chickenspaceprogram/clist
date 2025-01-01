@@ -8,7 +8,7 @@ Creator:\
 Athena Boose <pestpestthechicken@yahoo.com>
 
 Project link:\
-https://github.com/chickenspaceprogram/clist\
+https://github.com/chickenspaceprogram/clist
 
 
 This project is available under the Mozilla Public License 2.0.

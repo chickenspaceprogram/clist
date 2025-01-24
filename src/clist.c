@@ -5,22 +5,22 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include "rand.h"
 #include <clist/clist.h>
 
-typedef struct pointer_arr {
-    size_t current_index;
-    void **arr;
-} PointerArr;
 
-/* public methods */
-void *cdll_get(CDLinkedList *list, size_t index);
-void *cdll_push_front(CDLinkedList *list, void *data);
-void cdll_remove(CDLinkedList *list, size_t index);
-void cdll_sort(CDLinkedList *list, int (*cmp)(void *thing1, void *thing2));
-int cdll_shuffle(CDLinkedList *list);
-void cdll_iter(CDLinkedList *list, void (*func)(void *data));
-void cdll_free(CDLinkedList *list);
+#define MAKE_CDLL_DEFS(member_type_name, cdll_struct_name)\
+typedef struct cdll_struct_name##_pointer_arr {\
+    size_t current_index;\
+    cdll_struct_name **arr;\
+} cdll_struct_name##_pointer_arr;\
+/* public methods */\
+void *CDLL_INTERNAL_GET_##cdll_struct_name##(cdll_struct_name *list, size_t index);\
+void *CDLL_INTERNAL_PUSH_FRONT_##cdll_struct_name##(cdll_struct_name *list, member_type_name *data);\
+void CDLL_INTERNAL_REMOVE_##cdll_struct_name##(cdll_struct_name *list, size_t index);\
+void CDLL_INTERNAL_SORT_##cdll_struct_name##(cdll_struct_name *list, int (*cmp)(member_type_name *thing1, member_type_name *thing2));\
+int CDLL_INTERNAL_SHUFFLE_##cdll_struct_name##(cdll_struct_name *list);\
+void CDLL_INTERNAL_ITER_##cdll_struct_name##(cdll_struct_name *list, void (*func)(cdll_struct_name *data));\
+void CDLL_INTERNAL_ITER_##cdll_struct_name##(cdll_struct_name *list);\
 
 /**
  * `data` is passed unmodified into `func` as `user_data`
@@ -30,23 +30,23 @@ void cdll_free(CDLinkedList *list);
  * list_data is ptr to ptr so that the user can modify where the pointer stored in the list points.
  * if you decide to modify *list_data, you must ensure that the original value of *list_data remains in the linked list somewhere to avoid memory leaks!
  */
-void cdll_iter_extra_state(CDLinkedList *list, void *data, void (*func)(void **list_data, void *user_data));
+void cdll_iter_extra_state(cdll_struct_name *list, void *data, void (*func)(void **list_data, void *user_data));
 
 /* private methods */
-CDLinkedListNode *cdll_get_internal(CDLinkedList *list, size_t index);
+cdll_struct_nameNode *cdll_get_internal(cdll_struct_name *list, size_t index);
 
 /**
  * Swaps `node` with the next one in the list
  * Only safe to call when there are at least two nodes in the list!
  * Does not modify the pointer structure of the list at all, just swaps around the data pointers.
  */
-void cdll_swap_nodes(CDLinkedListNode *node); // swaps the node passed as argument with the next one in the list
+void cdll_swap_nodes(cdll_struct_nameNode *node); // swaps the node passed as argument with the next one in the list
 void list_into_arr_internal(void **list_data, void *arr);
 void arr_into_list_internal(void **list_data, void *arr);
 
 /* constructor */
-CDLinkedList newCDLinkedList(size_t data_size) {
-    CDLinkedList newlinklist = {
+cdll_struct_name newcdll_struct_name(size_t data_size) {
+    cdll_struct_name newlinklist = {
         .first = NULL,
         .length = 0,
         .data_size = data_size,
@@ -63,13 +63,13 @@ CDLinkedList newCDLinkedList(size_t data_size) {
 }
 
 
-void *cdll_get(CDLinkedList *list, size_t index) {
+void *cdll_get(cdll_struct_name *list, size_t index) {
     return cdll_get_internal(list, index)->data;
 }
 
 
-void *cdll_push_front(CDLinkedList *list, void *data) {
-    CDLinkedListNode *next_front = malloc(sizeof(CDLinkedListNode));
+void *cdll_push_front(cdll_struct_name *list, void *data) {
+    cdll_struct_nameNode *next_front = malloc(sizeof(cdll_struct_nameNode));
     if (next_front == NULL) {
         return NULL;
     }
@@ -105,8 +105,8 @@ void *cdll_push_front(CDLinkedList *list, void *data) {
     return next_front->data;
 }
 
-void cdll_remove(CDLinkedList *list, size_t index) {
-    CDLinkedListNode *target = cdll_get_internal(list, index);
+void cdll_remove(cdll_struct_name *list, size_t index) {
+    cdll_struct_nameNode *target = cdll_get_internal(list, index);
     if (target == NULL) {
         return;
     }
@@ -132,8 +132,8 @@ void cdll_remove(CDLinkedList *list, size_t index) {
 }
 
 
-void cdll_sort(CDLinkedList *list, int (*cmp)(void *thing1, void *thing2)) {
-    CDLinkedListNode *current;
+void cdll_sort(cdll_struct_name *list, int (*cmp)(void *thing1, void *thing2)) {
+    cdll_struct_nameNode *current;
     bool has_swapped = true;
     if (list->length < 2) {
         return;
@@ -154,7 +154,7 @@ void cdll_sort(CDLinkedList *list, int (*cmp)(void *thing1, void *thing2)) {
 
 
 
-int cdll_shuffle(CDLinkedList *list) {
+int cdll_shuffle(cdll_struct_name *list) {
     PointerArr parr = {.current_index = 0}; // wrapper struct for an array of void *
     int rand_num;
     void *temp;
@@ -172,7 +172,7 @@ int cdll_shuffle(CDLinkedList *list) {
     list->iter2(list, &parr, &list_into_arr_internal);
     
     for (int i = 0; i < list->length - 1; ++i) {
-        rand_num = randint(i, list->length);
+        rand_num = (rand() % (list->length - i)) + i;
         temp = parr.arr[i];
         parr.arr[i] = parr.arr[rand_num];
         parr.arr[rand_num] = temp;
@@ -186,8 +186,8 @@ int cdll_shuffle(CDLinkedList *list) {
 }
 
 
-void cdll_iter(CDLinkedList *list, void (*func)(void *data)) {
-    CDLinkedListNode *current = list->first;
+void cdll_iter(cdll_struct_name *list, void (*func)(void *data)) {
+    cdll_struct_nameNode *current = list->first;
     if (current == NULL) {
         return;
     }
@@ -199,8 +199,8 @@ void cdll_iter(CDLinkedList *list, void (*func)(void *data)) {
 }
 
 
-void cdll_iter_extra_state(CDLinkedList *list, void *data, void (*func)(void **list_data, void *user_data)) {
-    CDLinkedListNode *current = list->first;
+void cdll_iter_extra_state(cdll_struct_name *list, void *data, void (*func)(void **list_data, void *user_data)) {
+    cdll_struct_nameNode *current = list->first;
     if (current == NULL) {
         return;
     }
@@ -211,8 +211,8 @@ void cdll_iter_extra_state(CDLinkedList *list, void *data, void (*func)(void **l
     }
 }
 
-CDLinkedListNode *cdll_get_internal(CDLinkedList *list, size_t index) {
-    CDLinkedListNode *current = list->first;
+cdll_struct_nameNode *cdll_get_internal(cdll_struct_name *list, size_t index) {
+    cdll_struct_nameNode *current = list->first;
     if (current == NULL) {
         return NULL;
     }
@@ -225,8 +225,8 @@ CDLinkedListNode *cdll_get_internal(CDLinkedList *list, size_t index) {
     return current;
 }
 
-void cdll_free(CDLinkedList *list) {
-    CDLinkedListNode *current_node;
+void cdll_free(cdll_struct_name *list) {
+    cdll_struct_nameNode *current_node;
     for (size_t i = 0; i < list->length; ++i) {
         current_node = list->first;
         list->first = current_node->next; // technically the last node in the list will have a dangling pointer but it's all getting freed anyways so we don't care
@@ -237,7 +237,7 @@ void cdll_free(CDLinkedList *list) {
     list->length = 0;
 }
 
-void cdll_swap_nodes(CDLinkedListNode *node) {
+void cdll_swap_nodes(cdll_struct_nameNode *node) {
     void *temp = node->data;
     node->data = node->next->data;
     node->next->data = temp;

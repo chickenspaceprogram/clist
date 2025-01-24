@@ -7,45 +7,43 @@
 
 #include <stddef.h>
 
-// CircularDoublyLinkedListNode is extremely long and I'm not typing that, this isn't the Win32 API lol
-typedef struct c_d_linked_list_node CDLinkedListNode; // did typedef before declaring struct since it's more readable
+// macros were the only way to emulate C++ templates or Rust generics
+// void * could work, but this is *far* more cursed and marginally more efficient
+// i've also reinvented name mangling, so that's cool
 
-struct c_d_linked_list_node {
-    CDLinkedListNode *next;
-    CDLinkedListNode *prev;
-    void *data;
-};
 
-typedef struct c_d_linked_list CDLinkedList;
 
-// C is object oriented if you try hard enough 
-struct c_d_linked_list {
-    CDLinkedListNode *first;
-    size_t length;
-    size_t data_size;
+// does this qualify as macro abuse?
 
-    void *(*get)(CDLinkedList *list, size_t index);
-    void *(*pushFront)(CDLinkedList *list, void *data);
-    void (*remove)(CDLinkedList *list, size_t index);
+#define MAKE_CDLL_HEADER(member_type_name)\
+typedef struct CDLinkedList_##member_type_name##_node CDLinkedList_##member_type_name##_node;/* did typedef before declaring struct since it's more readable*/\
+struct CDLinkedList_##member_type_name##_node {\
+    CDLinkedList_##member_type_name##_node *next;\
+    CDLinkedList_##member_type_name##_node *prev;\
+    member_type_name *data;\
+};\
+typedef struct CDLinkedList_##member_type_name CDLinkedList_##member_type_name;\
+struct CDLinkedList_##member_type_name {/* C is object oriented if you try hard enough*/\
+    CDLinkedList_##member_type_name##_node *first;\
+    size_t length;\
+    void *(*get)(CDLinkedList_##member_type_name *list, size_t index);\
+    void *(*pushFront)(CDLinkedList_##member_type_name *list, member_type_name *data);\
+    void (*remove)(CDLinkedList_##member_type_name *list, size_t index);\
     /**
      * Sorts the list with bubble sort.
-     * I'd use a better algorithm but if you're using a linked list youprobably don't care about performance (cache misses have already ruined your day)
-     */
-    void (*sort)(CDLinkedList *list, int (*cmp)(void *thing1, void *thing2));
-    
-
-    int (*shuffle)(CDLinkedList *list);
-    void (*iter)(CDLinkedList *list, void (*func)(void *data)); // applies `func` to every element in `list`
-    
+     * I'd use a better algorithm but if you're using a linked list you probably don't care about performance (cache misses have already ruined your day)
+     */\
+    void (*sort)(CDLinkedList_##member_type_name *list, int (*cmp)(member_type_name *thing1, member_type_name *thing2));\
+    int (*shuffle)(CDLinkedList_##member_type_name *list);\
+    void (*iter)(CDLinkedList_##member_type_name *list, void (*func)(member_type_name *data)); /* applies `func` to every element in `list`*/\
     /**
      * `data` is passed unmodified into `func` as the second parameter
      * this gives the user a bit of extra state to play with
      * using this approach, the iterator can be made threadsafe if the user wishes, which is impossible with static variables
-     */
-    void (*iter2)(CDLinkedList *list, void *data, void (*func)(void **list_data, void *user_data));
-    void (*free)(CDLinkedList *list);
-};
-
-CDLinkedList newCDLinkedList(size_t data_size);
+     */\
+    void (*iter2)(CDLinkedList_##member_type_name *list, void *data, void (*func)(member_type_name **list_data, void *user_data));\
+    void (*free)(CDLinkedList_##member_type_name *list);\
+};\
+CDLinkedList_##member_type_name new_##CDLinkedList_##member_type_name(size_t data_size);
 
 #endif

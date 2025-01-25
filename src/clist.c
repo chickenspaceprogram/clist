@@ -8,6 +8,8 @@
 #include "rand.h"
 #include <clist/clist.h>
 
+
+
 typedef struct pointer_arr {
     size_t current_index;
     void **arr;
@@ -15,12 +17,17 @@ typedef struct pointer_arr {
 
 /* public methods */
 void *cdll_get(CDLinkedList *list, size_t index);
-void *cdll_push_front(CDLinkedList *list, void *data);
+void *cdll_insert_front(CDLinkedList *list,void *data);
+void *cdll_insert_back(CDLinkedList *list, void *data);
 void cdll_remove(CDLinkedList *list, size_t index);
 void cdll_sort(CDLinkedList *list, int (*cmp)(void *thing1, void *thing2));
 int cdll_shuffle(CDLinkedList *list);
 void cdll_iter(CDLinkedList *list, void (*func)(void *data));
 void cdll_free(CDLinkedList *list);
+
+
+// this is only here because Andy requires it
+CDLinkedListNode *makeNode(void *data, size_t data_size);
 
 /**
  * `data` is passed unmodified into `func` as `user_data`
@@ -31,6 +38,21 @@ void cdll_free(CDLinkedList *list);
  * if you decide to modify *list_data, you must ensure that the original value of *list_data remains in the linked list somewhere to avoid memory leaks!
  */
 void cdll_iter_extra_state(CDLinkedList *list, void *data, void (*func)(void **list_data, void *user_data));
+
+
+
+const cdll_vtable main_cdll_vtable = {
+    .get = &cdll_get,
+    .insertFront = &cdll_insert_front,
+    .insertBack = &cdll_insert_back,
+    .remove = &cdll_remove,
+    .sort = &cdll_sort,
+    .shuffle = &cdll_shuffle,
+    .iter = &cdll_iter,
+    .iter2 = &cdll_iter_extra_state,
+    .free = &cdll_free,
+};
+
 
 /* private methods */
 CDLinkedListNode *cdll_get_internal(CDLinkedList *list, size_t index);
@@ -50,17 +72,31 @@ CDLinkedList newCDLinkedList(size_t data_size) {
         .first = NULL,
         .length = 0,
         .data_size = data_size,
-        .get = &cdll_get,
-        .pushFront = &cdll_push_front,
-        .remove = &cdll_remove,
-        .sort = &cdll_sort,
-        .shuffle = &cdll_shuffle,
-        .iter = &cdll_iter,
-        .iter2 = &cdll_iter_extra_state,
-        .free = &cdll_free,
+        .f = &main_cdll_vtable,
     };
     return newlinklist;
 }
+
+
+CDLinkedListNode *makeNode(void *data, size_t data_size) {
+    CDLinkedListNode *node = malloc(sizeof(CDLinkedListNode));
+    if (node == NULL) {
+        return NULL;
+    }
+
+    node->next = NULL;
+    node->prev = NULL;
+    node->data = malloc(data_size);
+    if (node->data == NULL) {
+        free(node);
+        return NULL;
+    }
+
+    memcpy(node->data, data, data_size);
+    return node;
+}
+
+
 
 
 void *cdll_get(CDLinkedList *list, size_t index) {
@@ -68,18 +104,23 @@ void *cdll_get(CDLinkedList *list, size_t index) {
 }
 
 
-void *cdll_push_front(CDLinkedList *list, void *data) {
-    CDLinkedListNode *next_front = malloc(sizeof(CDLinkedListNode));
+void *cdll_insert_front(CDLinkedList *list, void *data) {
+    void *dat = NULL;
+    if ((dat = cdll_insert_back(list, data)) == NULL) {
+        return NULL;
+    }
+    if (list->length < 2) {
+        return dat;
+    }
+    list->first = list->first->prev;
+    return dat;
+}
+
+void *cdll_insert_back(CDLinkedList *list, void *data) {
+    CDLinkedListNode *next_front = makeNode(data, list->data_size);
     if (next_front == NULL) {
         return NULL;
     }
-    next_front->data = malloc(list->data_size);
-    if (next_front->data == NULL) {
-        free(next_front);
-        return NULL;
-    }
-
-    memcpy(next_front->data, data, list->data_size);
     ++(list->length);
     if (list->length == 1) {
         next_front->next = NULL;
@@ -169,7 +210,7 @@ int cdll_shuffle(CDLinkedList *list) {
 
     summary: linked lists are dumb in most cases
     */
-    list->iter2(list, &parr, &list_into_arr_internal);
+    list->f->iter2(list, &parr, &list_into_arr_internal);
     
     for (int i = 0; i < list->length - 1; ++i) {
         rand_num = randint(i, list->length);
@@ -179,7 +220,7 @@ int cdll_shuffle(CDLinkedList *list) {
     }
     
     parr.current_index = 0;
-    list->iter2(list, &parr, &arr_into_list_internal);
+    list->f->iter2(list, &parr, &arr_into_list_internal);
     
     free(parr.arr);
     return 0;

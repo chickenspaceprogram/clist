@@ -15,17 +15,15 @@ struct c_d_linked_list_node {
     CDLinkedListNode *prev;
     void *data;
 };
-
 typedef struct c_d_linked_list CDLinkedList;
-
+typedef struct cdll_vtable cdll_vtable; 
 // C is object oriented if you try hard enough 
-struct c_d_linked_list {
-    CDLinkedListNode *first;
-    size_t length;
-    size_t data_size;
 
+
+typedef struct cdll_vtable {
     void *(*get)(CDLinkedList *list, size_t index);
-    void *(*pushFront)(CDLinkedList *list, void *data);
+    void *(*insertFront)(CDLinkedList *list, void *data);
+    void *(*insertBack)(CDLinkedList *list, void *data);
     void (*remove)(CDLinkedList *list, size_t index);
     /**
      * Sorts the list with bubble sort.
@@ -35,6 +33,8 @@ struct c_d_linked_list {
     
 
     int (*shuffle)(CDLinkedList *list);
+
+    // printList can be implemented by passing in an appropriate function pointer
     void (*iter)(CDLinkedList *list, void (*func)(void *data)); // applies `func` to every element in `list`
     
     /**
@@ -44,6 +44,16 @@ struct c_d_linked_list {
      */
     void (*iter2)(CDLinkedList *list, void *data, void (*func)(void **list_data, void *user_data));
     void (*free)(CDLinkedList *list);
+} cdll_vtable;
+
+
+extern const cdll_vtable main_cdll_vtable;
+
+struct c_d_linked_list {
+    CDLinkedListNode *first;
+    size_t length;
+    size_t data_size;
+    const cdll_vtable *f; // pointer to this function's vtable
 };
 
 CDLinkedList newCDLinkedList(size_t data_size);

@@ -27,7 +27,7 @@ typedef struct cdll_vtable {
     void (*remove)(CDLinkedList *list, size_t index);
     /**
      * Sorts the list with bubble sort.
-     * I'd use a better algorithm but if you're using a linked list youprobably don't care about performance (cache misses have already ruined your day)
+     * I'd use a better algorithm but if you're using a linked list you probably don't care about performance (cache misses have already ruined your day)
      */
     void (*sort)(CDLinkedList *list, int (*cmp)(void *thing1, void *thing2));
     
@@ -53,7 +53,7 @@ struct c_d_linked_list {
     CDLinkedListNode *first;
     size_t length;
     size_t data_size;
-    const cdll_vtable *f; // pointer to this function's vtable
+    const cdll_vtable *f; // using a vtable minimizes the space each list takes up
 };
 
 CDLinkedList newCDLinkedList(size_t data_size);

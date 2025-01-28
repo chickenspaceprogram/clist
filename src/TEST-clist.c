@@ -63,6 +63,18 @@ void print_int(void *intp) {
     printf("%d ", val);
 }
 
+int int_cmp(void *int1, void *int2) {
+    int intone = *(int *)int1;
+    int inttwo = *(int *)int2;
+    if (intone > inttwo) {
+        return 1;
+    }
+    if (intone < inttwo) {
+        return -1;
+    }
+    return 0;
+}
+
 void test_shuffle_iter(void) {
     CDLinkedList list;
     newCDLinkedList(&list, sizeof(int));
@@ -74,8 +86,10 @@ void test_shuffle_iter(void) {
     int ret = list.f->shuffle(&list);
     assert(ret == 0);
 
-    list.f->iter(&list, &print_int);
-
+    list.f->iter(&list, &print_int); putchar('\n');
+    list.f->sort(&list, &int_cmp);
+    list.f->iter(&list, &print_int); putchar('\n');
+    
     list.f->free(&list);
     putchar('\n');
 }

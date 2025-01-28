@@ -4,6 +4,10 @@
 
 cmake_minimum_required(VERSION 3.15)
 project(list C)
+
+# optional, enable if you want
+# include(CTest)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_C_STANDARD 11)
 add_subdirectory(src)

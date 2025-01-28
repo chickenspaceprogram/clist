@@ -7,7 +7,8 @@
 #include <stdio.h>
 
 void test_push_get(void) {
-    CDLinkedList list = newCDLinkedList(sizeof(int));
+    CDLinkedList list;
+    newCDLinkedList(&list, sizeof(int));
     int num = 123;
     list.f->insertFront(&list, &num);
     assert(list.length == 1);
@@ -29,7 +30,8 @@ void test_push_get(void) {
 }
 
 void test_remove(void) {
-    CDLinkedList list = newCDLinkedList(sizeof(int));
+    CDLinkedList list;
+    newCDLinkedList(&list, sizeof(int));
     int num = 123;
     list.f->insertFront(&list, &num);
     assert(list.length == 1);
@@ -62,7 +64,8 @@ void print_int(void *intp) {
 }
 
 void test_shuffle_iter(void) {
-    CDLinkedList list = newCDLinkedList(sizeof(int));
+    CDLinkedList list;
+    newCDLinkedList(&list, sizeof(int));
 
     int arr[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
     for (int i = 0; i < 10; ++i) {

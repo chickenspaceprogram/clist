@@ -41,7 +41,7 @@ void cdll_iter_extra_state(CDLinkedList *list, void *data, void (*func)(void **l
 
 
 
-const cdll_vtable main_cdll_vtable = {
+cdll_vtable main_cdll_vtable = {
     .get = &cdll_get,
     .insertFront = &cdll_insert_front,
     .insertBack = &cdll_insert_back,
@@ -67,14 +67,14 @@ void list_into_arr_internal(void **list_data, void *arr);
 void arr_into_list_internal(void **list_data, void *arr);
 
 /* constructor */
-CDLinkedList newCDLinkedList(size_t data_size) {
+void newCDLinkedList(CDLinkedList *list, size_t data_size) {
     CDLinkedList newlinklist = {
         .first = NULL,
         .length = 0,
         .data_size = data_size,
         .f = &main_cdll_vtable,
     };
-    return newlinklist;
+    *list = newlinklist;
 }
 
 

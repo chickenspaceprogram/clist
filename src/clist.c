@@ -212,7 +212,7 @@ int cdll_shuffle(CDLinkedList *list) {
     */
     list->f->iter2(list, &parr, &list_into_arr_internal);
     
-    for (int i = 0; i < list->length - 1; ++i) {
+    for (size_t i = 0; i < list->length - 1; ++i) {
         rand_num = randint(i, list->length);
         temp = parr.arr[i];
         parr.arr[i] = parr.arr[rand_num];
@@ -259,7 +259,7 @@ CDLinkedListNode *cdll_get_internal(CDLinkedList *list, size_t index) {
     }
     index = index % list->length; // since the list is circular, you'd loop back around anyways
                                   // conveniently this also takes care of the special case, length=1, since the for loop gets skipped
-    for (int i = 0; i < index; ++i) { // could technically loop from back to front in cases where it would be faster but oh well
+    for (size_t i = 0; i < index; ++i) { // could technically loop from back to front in cases where it would be faster but oh well
         current = current->next;
     }
 

@@ -43,6 +43,7 @@ typedef struct cdll_vtable {
      * using this approach, the iterator can be made threadsafe if the user wishes, which is impossible with static variables
      */
     void (*iter2)(CDLinkedList *list, void *data, void (*func)(void **list_data, void *user_data));
+    void (*iterOrder)(CDLinkedList *list, size_t *iter_order, void (*func)(void *data));
     void (*free)(CDLinkedList *list);
 } cdll_vtable;
 

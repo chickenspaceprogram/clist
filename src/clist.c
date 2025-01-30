@@ -24,6 +24,7 @@ void cdll_sort(CDLinkedList *list, int (*cmp)(void *thing1, void *thing2));
 int cdll_shuffle(CDLinkedList *list);
 void cdll_iter(CDLinkedList *list, void (*func)(void *data));
 void cdll_free(CDLinkedList *list);
+void cdll_iter_order(CDLinkedList *list, size_t *order, void (*func)(void *data));
 
 
 // this is only here because Andy requires it
@@ -50,6 +51,7 @@ cdll_vtable main_cdll_vtable = {
     .shuffle = &cdll_shuffle,
     .iter = &cdll_iter,
     .iter2 = &cdll_iter_extra_state,
+    .iterOrder = &cdll_iter_order,
     .free = &cdll_free,
 };
 
@@ -294,3 +296,8 @@ void arr_into_list_internal(void **list_data, void *arr) {
     *list_data = parr->arr[parr->current_index++];
 }
 
+void cdll_iter_order(CDLinkedList *list, size_t *order, void (*func)(void *data)) {
+    for (size_t i = 0; i < list->length; ++i) {
+        func(list->f->get(list, order[i]));
+    }
+}

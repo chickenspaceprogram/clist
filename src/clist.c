@@ -106,7 +106,7 @@ void *cdll_get(CDLinkedList *list, size_t index) {
     if (node == NULL) {
         return NULL;
     }
-    return node;
+    return node->data;
 }
 
 

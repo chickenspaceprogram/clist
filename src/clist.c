@@ -102,7 +102,11 @@ CDLinkedListNode *makeNode(void *data, size_t data_size) {
 
 
 void *cdll_get(CDLinkedList *list, size_t index) {
-    return cdll_get_internal(list, index)->data;
+    CDLinkedListNode *node = cdll_get_internal(list, index);
+    if (node == NULL) {
+        return NULL;
+    }
+    return node;
 }
 
 
